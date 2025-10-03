@@ -72,16 +72,7 @@ app.get("/api/auth/google/callback", async (req, res) => {
   }
 });
 
-// Express example
-app.get("/oauth2callback", async (req, res) => {
-  const code = req.query.code;
-  if (!code) return res.send("No code received");
-  
-  const { tokens } = await oauth2Client.getToken(code); // Using googleapis
-  oauth2Client.setCredentials(tokens);
-  
-  res.send("Authorization successful! You can close this tab.");
-});
+// This endpoint is not needed - using the /api/auth/google/callback endpoint above
 
 
 // logout
@@ -183,21 +174,27 @@ app.get("/api/meetings", async (req, res) => {
 
 // Summarize meeting using OpenAI (server side)
 app.post("/api/summarize", async (req, res) => {
-  const meeting = req.body.meeting;
+  const { meeting } = req.body;
   if (!meeting) return res.status(400).json({ error: "missing_meeting" });
   if (!OPENAI_API_KEY) return res.status(500).json({ error: "openai_not_configured" });
 
-  const prompt = `Summarize this meeting in 3 bullet points and 1 action item:\n\n${JSON.stringify(meeting, null, 2)}`;
+  // Format the meeting details
+  const startDate = new Date(meeting.startTime).toLocaleDateString();
+  const startTime = new Date(meeting.startTime).toLocaleTimeString();
+  const endTime = new Date(meeting.endTime).toLocaleTimeString();
+  const eventName = meeting.title;
+
+  const prompt = `This event "${eventName}" was scheduled on ${startDate} from ${startTime} to ${endTime}. Based on the event name, write a short note about what this event could be about and what might have been discussed. Keep it concise and informative.`;
 
   try {
     const ores = await axios.post("https://api.openai.com/v1/chat/completions", {
       model: "gpt-4o-mini",
       messages: [
-        { role: "system", content: "You are an assistant that summarizes meetings concisely." },
+        { role: "system", content: "You are an assistant that provides helpful summaries of calendar events based on their names and timing." },
         { role: "user", content: prompt }
       ],
-      max_tokens: 250,
-      temperature: 0.2
+      max_tokens: 200,
+      temperature: 0.3
     }, {
       headers: { Authorization: `Bearer ${OPENAI_API_KEY}`, "Content-Type": "application/json" }
     });

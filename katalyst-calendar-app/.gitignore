@@ -30,10 +30,13 @@ dist/
 .DS_Store
 .env.local
 npm-debug.log
-.env
-
-.server/.env.example
 server/.env
 server/.env.example
-node_modules
+server/.env.backup
+
+.env
+node_modules/
 server/node_modules
+# Ignore all node_modules directories in the project
+node_modules/
+../node_modules/

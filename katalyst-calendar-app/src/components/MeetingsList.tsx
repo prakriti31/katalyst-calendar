@@ -1,7 +1,7 @@
 // src/components/MeetingsList.tsx
 import React, { useEffect, useState } from "react";
 import { fetchMeetings, Meeting, summarizeMeeting } from "../api/calendar";
-import MeetingCard from "./MeetingCard";
+import MeetingCard from "./MeetingsCard";
 import axios from "axios";
 
 const MeetingsList: React.FC = () => {
